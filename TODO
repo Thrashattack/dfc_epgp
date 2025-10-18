@@ -1,0 +1,3 @@
+- Use min_ep and min_gp from configs to display or not players with min values
+- Make sure that the condition to not displayer players with min values is exclusive, only hiding players that have both values = min values
+- Disregard players with min values during decay
