@@ -686,44 +686,48 @@ function EPGP:DecayEPGP()
   for name, _ in pairs(ep_data) do
     local ep, gp, main = self:GetEPGP(name)
     assert(main == nil, "Corrupt alt data!")
-    
-    local decay_ep = math.ceil(ep * decay)
-    local decay_gp = math.ceil(gp * decay)
-    local diff_ep = ep - decay_ep
-    local diff_gp = gp - decay_gp
 
-    if (diff_ep <= min_ep) then
-      decay_ep = ep - min_ep
-    end
-    if (diff_gp <= base_gp) then
-      decay_gp = gp - base_gp
+    if ep > min_ep or gp > base_gp then
+      local decay_ep = math.ceil(ep * decay)
+      local decay_gp = math.ceil(gp * decay)
+      local diff_ep = ep - decay_ep
+      local diff_gp = gp - decay_gp
+
+      if (diff_ep <= min_ep) then
+        decay_ep = ep - min_ep
+      end
+      if (diff_gp <= base_gp) then
+        decay_gp = gp - base_gp
+      end
+
+      decay_ep, decay_gp, final_ep, final_gp = AddEPGP(name, -decay_ep, -decay_gp, true)
+
+      -- Queue EPAward if needed
+      if (decay_ep ~= 0) then
+        table.insert(awardQueue, {
+          type = "EP",
+          name = name,
+          reason = reason,
+          amount = decay_ep,
+          final_ep = final_ep,
+          final_gp = final_gp,
+        })
+      end
+
+      -- Queue GPAward if needed
+      if (decay_gp ~= 0) then
+        table.insert(awardQueue, {
+          type = "GP",
+          name = name,
+          reason = reason,
+          amount = decay_gp,
+          final_gp = final_gp,
+          final_ep = final_ep,
+        })
+      end
     end
 
-    decay_ep, decay_gp, final_ep, final_gp = AddEPGP(name, -decay_ep, -decay_gp, true)
-
-    -- Queue EPAward if needed
-    if (decay_ep ~= 0) then
-      table.insert(awardQueue, {
-        type = "EP",
-        name = name,
-        reason = reason,
-        amount = decay_ep,
-        final_ep = final_ep,
-        final_gp = final_gp,
-      })
-    end
-
-    -- Queue GPAward if needed
-    if (decay_gp ~= 0) then
-      table.insert(awardQueue, {
-        type = "GP",
-        name = name,
-        reason = reason,
-        amount = decay_gp,
-        final_gp = final_gp,
-        final_ep = final_ep,
-      })
-    end
+    print(string.format("Starting Decay for %d members", #awardQueue))
   end
 
   -- Fire general Decay event immediately
@@ -745,7 +749,7 @@ function EPGP:DecayEPGP()
         callbacks:Fire("GPAward", award.name, award.reason, award.amount, true)
       end
       GS:SetNote(award.name, EncodeNote(award.final_ep, award.final_gp ))
-      print(string.format("Decay Progress %.2f %%", (index / #awardQueue) * 100))
+      print(string.format("Decay Progress %.2f %%. %s: %s - -%.2f", (index / #awardQueue) * 100, award.name, award.type, award.amount))
       index = index + 1
       elapsed = 0
     end
