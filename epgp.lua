@@ -291,6 +291,8 @@ local function DestroyStandings()
 end
 
 local function RefreshStandings(order, showEveryone)
+  local min_ep = global_config.min_ep
+  local base_gp = global_config.base_gp
   Debug("Resorting standings")
   if UnitInRaid("player") then
     -- If we are in raid:
@@ -302,10 +304,10 @@ local function RefreshStandings(order, showEveryone)
       if showEveryone or UnitInRaid(n) or selected[n] then
         if EPGP:StandingsHideMinEPGP() then
           local ep, gp = EPGP:GetEPGP(n)
-          if ep > 1000 and gp > 1000 then
+          if ep > min_ep or gp > base_gp then
             table.insert(standings, n)
           end
-        else 
+        else
           table.insert(standings, n)
         end
       end
@@ -314,7 +316,7 @@ local function RefreshStandings(order, showEveryone)
       if UnitInRaid(n) or selected[n] then
         if EPGP:StandingsHideMinEPGP() then
           local ep, gp = EPGP:GetEPGP(n)
-          if ep > 1000 and gp > 1000 then
+           if ep > min_ep or gp > base_gp then
             table.insert(standings, n)
           end
         else 
@@ -327,7 +329,7 @@ local function RefreshStandings(order, showEveryone)
     for n in pairs(ep_data) do
       if EPGP:StandingsHideMinEPGP() then
         local ep, gp = EPGP:GetEPGP(n)
-        if ep > 1000 and gp > 1000 then
+         if ep > min_ep or gp > base_gp then
           table.insert(standings, n)
         end
       else 
