@@ -1103,10 +1103,11 @@ local function CreateEPGPFrameStandings()
 
   local function HideWhileNotInRaid(self)
     if UnitInRaid("player") then
-      self:Show()
+      cb:Show()
     else
-      self:Hide()
+      cb:Hide()
     end
+    min_epgp_filter:Show()
   end
 
   f:RegisterEvent("RAID_ROSTER_UPDATE")
