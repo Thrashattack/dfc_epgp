@@ -134,6 +134,10 @@ function EPGP:ProcessCommand(str)
   elseif command == "unlink_external" then
     local externalName = self:GetArgs(str, 1, nextpos)
     self:UnlinkExternals(externalName)
+  elseif command == "show_externals" then
+    for ext, inguild in pairs(EPGP:GetExternals()) do 
+      EPGP:Print(ext, "->", inguild)
+    end
   elseif command == "help" then
     local help = {
       self.version,
@@ -143,8 +147,9 @@ function EPGP:ProcessCommand(str)
       "   ep <name> <reason> <amount> - "..L["Award EP"],
       "   gp <name> <itemlink> [<amount>] - "..L["Credit GP"],
       "   decay - "..L["Decay of EP/GP by %d%%"]:format(EPGP:GetDecayPercent()),
-      "   link_external <external_toon_name> <in_guild_name> - Link an external toon with his in guild toon for EPGP values",
-      "   unlink_external <external_toon_name> - Remove the link between an external toon and a in guild toon",
+      "   link_external <external_toon_name> <in_guild_name> - Link an external toon with their in guild toon",
+      "   unlink_external <external_toon_name> - Remove the link between an external toon and an in guild toon",
+      "   show_externals - Show your list of external toons"
     }
     EPGP:Print(table.concat(help, "\n"))
   else

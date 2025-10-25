@@ -295,6 +295,21 @@ local function RefreshStandings(order, showEveryone)
   local base_gp = global_config.base_gp
   Debug("Resorting standings")
   if UnitInRaid("player") then
+    -- Put externals in the roaster
+    for external in pairs(db.profile.externals) do
+      if UnitInRaid(external) then
+        local mainToon = db.profile.externals[external]
+        if EPGP:StandingsHideMinEPGP() then
+          local ep, gp = EPGP:GetEPGP(mainToon)
+          if ep > min_ep or gp > base_gp then
+            table.insert(standings, mainToon)
+          end
+        else
+          table.insert(standings, mainToon)
+        end
+      end
+    end
+
     -- If we are in raid:
     ---  showEveryone = true: show all in raid (including alts) and
     ---  all leftover mains
@@ -481,11 +496,31 @@ local function ParseGuildNote(callback, name, note)
 end
 
 function EPGP:LinkExternals(externalName, inGuildName)
+  if not ep_data[inGuildName] then
+    EPGP:Print(inGuildName .. " is not in guild")
+    return
+  end
+
   db.profile.externals[externalName] = inGuildName
+  EPGP:Print("External linked successfully. - " .. externalName .. " => " .. inGuildName)
 end
 
 function EPGP:UnlinkExternals(externalName)
+  if not db.profile.externals[externalName] then
+    EPGP:Print(externalName .. " is not in the externals list")
+    return
+  end
+
   db.profile.externals[externalName] = nil
+  EPGP:Print("External unlinked successfully. - " .. externalName)
+end
+
+function EPGP:GetExternals()
+  return db.profile.externals
+end
+
+function EPGP:GetExternal(externalName)
+  return db.profile.externals[externalName]
 end
 
 function EPGP:ExportRoster()
@@ -626,6 +661,13 @@ function EPGP:IsMemberInAwardList(name)
   if UnitInRaid("player") then
     -- If we are in raid the member is in the award list if it is in
     -- the raid or the selected list.
+    if not UnitInRaid(name) then
+      for ext, inGuild in pairs(db.profile.externals) do
+        if name == inGuild and UnitInRaid(ext) then
+          return true
+        end
+      end
+    end
     return UnitInRaid(name) or selected[name]
   else
     -- If we are not in raid and there is noone selected everyone will
@@ -810,11 +852,19 @@ function EPGP:CanIncEPBy(reason, amount)
   return true
 end
 
-function EPGP:IncEPBy(name, reason, amount, mass, undo)
+function EPGP:IncEPBy(playerName, reason, amount, mass, undo)
   -- When we do mass EP or decay we know what we are doing even though
   -- CanIncEPBy returns false
   assert(EPGP:CanIncEPBy(reason, amount) or mass or undo)
-  assert(type(name) == "string")
+  assert(type(playerName) == "string")
+  
+  local name
+
+  if db.profile.externals[playerName] then
+    name = db.profile.externals[playerName]
+  else
+    name = playerName
+  end
 
   local ep, gp, main = self:GetEPGP(name)
   if not ep then
@@ -845,11 +895,19 @@ function EPGP:CanIncGPBy(reason, amount)
   return true
 end
 
-function EPGP:IncGPBy(name, reason, amount, mass, undo)
+function EPGP:IncGPBy(playerName, reason, amount, mass, undo)
   -- When we do mass GP or decay we know what we are doing even though
   -- CanIncGPBy returns false
   assert(EPGP:CanIncGPBy(reason, amount) or mass or undo)
-  assert(type(name) == "string")
+  assert(type(playerName) == "string")
+
+  local name
+
+  if db.profile.externals[playerName] then
+    name = db.profile.externals[playerName]
+  else
+    name = playerName
+  end
 
   local ep, gp, main = self:GetEPGP(name)
   if not ep then
