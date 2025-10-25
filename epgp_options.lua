@@ -128,6 +128,12 @@ function EPGP:ProcessCommand(str)
     if EPGP:CanDecayEPGP() then
       StaticPopup_Show("EPGP_DECAY_EPGP", EPGP:GetDecayPercent())
     end
+  elseif command == "link_external" then
+    local externalName, inGuildName = self:GetArgs(str, 2, nextpos)
+    self:LinkExternals(externalName, inGuildName)
+  elseif command == "unlink_external" then
+    local externalName = self:GetArgs(str, 1, nextpos)
+    self:UnlinkExternals(externalName)
   elseif command == "help" then
     local help = {
       self.version,
@@ -137,6 +143,8 @@ function EPGP:ProcessCommand(str)
       "   ep <name> <reason> <amount> - "..L["Award EP"],
       "   gp <name> <itemlink> [<amount>] - "..L["Credit GP"],
       "   decay - "..L["Decay of EP/GP by %d%%"]:format(EPGP:GetDecayPercent()),
+      "   link_external <external_toon_name> <in_guild_name> - Link an external toon with his in guild toon for EPGP values",
+      "   unlink_external <external_toon_name> - Remove the link between an external toon and a in guild toon",
     }
     EPGP:Print(table.concat(help, "\n"))
   else
