@@ -480,6 +480,14 @@ local function ParseGuildNote(callback, name, note)
   DestroyStandings()
 end
 
+function EPGP:LinkExternals(externalName, inGuildName)
+  db.profile.externals[externalName] = inGuildName
+end
+
+function EPGP:UnlinkExternals(externalName)
+  db.profile.externals[externalName] = nil
+end
+
 function EPGP:ExportRoster()
   local base_gp = global_config.base_gp
   local t = {}
@@ -764,7 +772,15 @@ function EPGP:DecayEPGP()
   delayFrame:Show()
 end
 
-function EPGP:GetEPGP(name)
+function EPGP:GetEPGP(playerName)
+  local name
+
+  if db.profile.externals[playerName] then
+    name = db.profile.externals[playerName]
+  else
+    name = playerName
+  end
+
   local main = main_data[name]
   if main then
     name = main
@@ -950,7 +966,8 @@ function EPGP:OnInitialize()
       show_everyone = false,
       sort_order = "PR",
       recurring_ep_period_mins = 15,
-      show_min_epgp_players = true
+      show_min_epgp_players = true,
+      externals = {}
     }
   }
   db:RegisterDefaults(defaults)
