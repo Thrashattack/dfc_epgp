@@ -295,17 +295,19 @@ local function RefreshStandings(order, showEveryone)
   local base_gp = global_config.base_gp
   Debug("Resorting standings")
   if UnitInRaid("player") then
-    -- Put externals in the roaster
-    for external in pairs(db.profile.externals) do
-      if UnitInRaid(external) then
-        local mainToon = db.profile.externals[external]
-        if EPGP:StandingsHideMinEPGP() then
-          local ep, gp = EPGP:GetEPGP(mainToon)
-          if ep > min_ep or gp > base_gp then
+    -- Put externals in the roaster when not listing everyone
+    if not showEveryone then
+      for external in pairs(db.profile.externals) do
+        if UnitInRaid(external) then
+          local mainToon = db.profile.externals[external]
+          if EPGP:StandingsHideMinEPGP() then
+            local ep, gp = EPGP:GetEPGP(mainToon)
+            if ep > min_ep or gp > base_gp then
+              table.insert(standings, mainToon)
+            end
+          else
             table.insert(standings, mainToon)
           end
-        else
-          table.insert(standings, mainToon)
         end
       end
     end
