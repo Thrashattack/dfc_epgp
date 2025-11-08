@@ -532,8 +532,8 @@ local sync_externals_frame = nil
 function EPGP:StartReceiveExternalsListener()
   if not CanEditOfficerNote() then return end
 
-  RegisterAddonMessagePrefix(ADDON_PREFIX)
-
+  print("|cff00ff00[DFC_EPGP]|r Starting the listener for transmiting externals")
+  print("|cff00ff00[DFC_EPGP]|r Will remain active and keep listening. Run /epgp stop_receive_externals to stop")
   sync_externals_frame = CreateFrame("Frame")
   sync_externals_frame:RegisterEvent("CHAT_MSG_ADDON")
   sync_externals_frame:SetScript("OnEvent", function (self, event, prefix, msg, channel, sender)
@@ -561,6 +561,8 @@ function EPGP:StopReceiveExternalsListener()
     sync_externals_frame:SetParent(nil)
     sync_externals_frame = nil
   end
+
+  print("|cff00ff00[DFC_EPGP]|r Stopping receive externals listener. Will no longer listen to events.")
 end
 
 function EPGP:TransmitExternals()
