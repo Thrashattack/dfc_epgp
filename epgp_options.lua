@@ -138,6 +138,12 @@ function EPGP:ProcessCommand(str)
     for ext, inguild in pairs(EPGP:GetExternals()) do 
       EPGP:Print(ext, "->", inguild)
     end
+  elseif command == "start_receive_externals" then
+    EPGP:StartReceiveExternalsListener()
+  elseif command == "stop_receive_externals" then
+    EPGP:StopReceiveExternalsListener()
+  elseif command == "transmit_externals" then
+    EPGP:TransmitExternals()
   elseif command == "help" then
     local help = {
       self.version,
@@ -149,7 +155,10 @@ function EPGP:ProcessCommand(str)
       "   decay - "..L["Decay of EP/GP by %d%%"]:format(EPGP:GetDecayPercent()),
       "   link_external <external_toon_name> <in_guild_name> - Link an external toon with their in guild toon",
       "   unlink_external <external_toon_name> - Remove the link between an external toon and an in guild toon",
-      "   show_externals - Show your list of external toons"
+      "   show_externals - Show your list of external toons",
+      "   start_receive_externals - Start externals sync between officers (receive data)",
+      "   stop_receive_externals - Stop externals sync between officers (receive data)",
+      "   transmit_externals - Start externals sync between officers (transmit data)",
     }
     EPGP:Print(table.concat(help, "\n"))
   else

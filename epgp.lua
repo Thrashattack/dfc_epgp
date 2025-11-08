@@ -525,6 +525,78 @@ function EPGP:GetExternal(externalName)
   return db.profile.externals[externalName]
 end
 
+local ADDON_PREFIX = "DFC_EPGP"
+local SYNC_EVENT = "SYNC_EXTERNALS"
+local sync_externals_frame = nil
+
+function EPGP:StartReceiveExternalsListener()
+  if not CanEditOfficerNote() then return end
+
+  RegisterAddonMessagePrefix(ADDON_PREFIX)
+
+  sync_externals_frame = CreateFrame("Frame")
+  sync_externals_frame:RegisterEvent("CHAT_MSG_ADDON")
+  sync_externals_frame:SetScript("OnEvent", function (self, event, prefix, msg, channel, sender)
+    if event ~= "CHAT_MSG_ADDON" or prefix ~= ADDON_PREFIX then return end
+
+    local eventType, data = string.match(msg, "([^:]+):(.+)")
+    if eventType == SYNC_EVENT then
+        local key, value = string.match(data, "([^=]+)=([^=]+)")
+        if key and value then
+            if not db.profile.externals then
+                db.profile.externals = {}
+            end
+            db.profile.externals[key] = value
+            print("|cff00ff00[DFC_EPGP]|r Updated externals from " .. sender .. ": " .. key .. " => " .. value)
+        end
+    end
+  end)
+end
+
+function EPGP:StopReceiveExternalsListener()
+  if not CanEditOfficerNote() then return end
+
+  if sync_externals_frame then
+    sync_externals_frame:Hide()
+    sync_externals_frame:SetParent(nil)
+    sync_externals_frame = nil
+  end
+end
+
+function EPGP:TransmitExternals()
+  if not CanEditOfficerNote() then return end
+
+  local function ScheduleTimer(delay, callbackFunc)
+    local t = 0
+    local f = CreateFrame("Frame")
+    f:SetScript("OnUpdate", function(self, elapsed)
+        t = t + elapsed
+        if t >= delay then
+          callbackFunc()
+          self:SetScript("OnUpdate", nil)
+          self:Hide()
+        end
+    end)
+  end
+
+  local externals = db.profile.externals
+
+  if not externals or next(externals) == nil then
+    print("|cffff0000[DFC_EPGP]|r No externals to sync.")
+    return
+  end
+  
+  local i = 0
+  for key, value in pairs(externals) do
+    i = i + 1
+    ScheduleTimer(i, function()
+      local msg = SYNC_EVENT .. ":" .. key .. "=" .. tostring(value)
+      SendAddonMessage(ADDON_PREFIX, msg, channel or "GUILD", target)
+      print("|cff00ff00[DFC_EPGP]|r Sent: " .. key .. " = " .. tostring(value))
+    end)
+  end
+end
+
 function EPGP:ExportRoster()
   local base_gp = global_config.base_gp
   local t = {}
@@ -820,7 +892,13 @@ function EPGP:GetEPGP(playerName)
   local name
 
   if db.profile.externals[playerName] then
-    name = db.profile.externals[playerName]
+    if ep_data[playerName] then
+      name = playerName
+      -- remove this external link since main toon is now in guild (has ep_data)
+      db.profile.externals[playerName] = nil
+    else
+      name = db.profile.externals[playerName]
+    end
   else
     name = playerName
   end
