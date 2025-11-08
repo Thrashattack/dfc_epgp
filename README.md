@@ -21,6 +21,7 @@ Find the origin discuss forum [here](http://groups.google.com/group/epgp-discuss
     - Externals are included in the Mass EP awards and the EP goes to their in-guild linked toons
     - Externals can be GPed and EPed with commands and dialog actions, and the values goes to their in-guild linked toons
     - Commands to link externals, unlink, and show all externals linked
+    - Commands to sync externals across officers
 
 
 # Instalation 
