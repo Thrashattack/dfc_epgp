@@ -27,4 +27,5 @@ Find the origin discuss forum [here](http://groups.google.com/group/epgp-discuss
 # Instalation 
 
 - Downlad the zip [here](https://github.com/Thrashattack/dfc_epgp/archive/refs/heads/main.zip). Extract all contents into the Addons Folder.
+  ### Make sure the folder is named DFC_epgp and not DFC_epgp-main
 
